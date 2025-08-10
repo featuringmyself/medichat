@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const ai = new GoogleGenAI({ 
-    apiKey: process.env.GOOGLE_AI_API_KEY || '' 
+    apiKey: process.env.GEMINI_API_KEY || '' 
 });
 
 export async function GET(request: Request): Promise<Response> {
