@@ -1,60 +1,125 @@
-import { createPartFromUri, createUserContent, GoogleGenAI } from "@google/genai";
-import fs from 'fs';
-import path from 'path';
+import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ 
-    apiKey: process.env.GEMINI_API_KEY || '' 
+// Validate API key exists
+if (!process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY environment variable is not set');
+}
+
+const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY
 });
 
-export async function GET(request: Request): Promise<Response> {
+export async function POST(request: Request) {
     try {
-        const imagePath = path.join(process.cwd(), 'public', 'prescription.png');
-        
-        if (!fs.existsSync(imagePath)) {
-            return new Response(
-                JSON.stringify({ error: 'Prescription image not found' }), 
-                { status: 404, headers: { 'Content-Type': 'application/json' } }
-            );
+        const formData = await request.formData();
+        const file = formData.get('file') as File;
+
+        if (!file) {
+            return Response.json({ error: 'No file provided' }, { status: 400 });
         }
-        
-        // More efficient: upload file directly
-        const prescription = await ai.files.upload({
-            file: fs.createReadStream(imagePath),
-            mimeType: 'image/png',
-            config: {
-                mimeType: 'image/png',
+
+        // Get file extension and determine MIME type
+        const fileName = file.name.toLowerCase();
+        const fileExtension = fileName.split('.').pop();
+
+        // Map file extensions to MIME types
+        const mimeTypeMap: { [key: string]: string } = {
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'pdf': 'application/pdf'
+        };
+
+        const mimeType = mimeTypeMap[fileExtension || ''] || file.type;
+
+        // Validate file type
+        const supportedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'application/pdf'];
+        if (!mimeType || !supportedTypes.includes(mimeType)) {
+            return Response.json({ error: 'Unsupported file type. Please use PNG, JPEG, GIF, WebP, or PDF.' }, { status: 400 });
+        }
+
+        // Validate file size (25MB limit)
+        if (file.size > 25 * 1024 * 1024) {
+            return Response.json({ error: 'File size exceeds 25MB limit' }, { status: 400 });
+        }
+
+        // Convert file to base64
+        const bytes = await file.arrayBuffer();
+        const base64Data = Buffer.from(bytes).toString('base64');
+
+        // Validate base64 data
+        if (!base64Data || base64Data.length === 0) {
+            return Response.json({ error: 'Failed to process file data' }, { status: 400 });
+        }
+
+        // Additional validation for image files
+        if (mimeType.startsWith('image/')) {
+            // Check if it's a valid image by looking at the base64 header
+            const imageHeaders = {
+                'image/png': 'iVBORw0KGgo',
+                'image/jpeg': '/9j/',
+                'image/gif': 'R0lGODlh',
+                'image/webp': 'UklGR'
+            };
+
+            const expectedHeader = imageHeaders[mimeType as keyof typeof imageHeaders];
+            if (expectedHeader && !base64Data.startsWith(expectedHeader)) {
+                return Response.json({ error: 'Invalid image format detected' }, { status: 400 });
             }
         }
-    );
+
+        // Log minimal info for debugging (avoid sensitive data)
+        console.log('Processing file:', fileName.replace(/[^a-zA-Z0-9.-]/g, ''), 'Size:', file.size, 'Type:', mimeType);
+
+        // Add a small delay to prevent rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash", 
+            model: "gemini-2.5-flash",
             contents: [
-                createUserContent([
-                    "Can I take Azithromycin with milk?",
-                    createPartFromUri(prescription.uri, prescription.mimeType)
-                ])
-            ],
-            config: {
-                systemInstruction: process.env.SYSTEM_PROMPT || "Analyze the prescription image and answer the question.",
-                responseMimeType: "application/json",
-            }
+                {
+                    parts: [
+                        { text: "What do you see in this image?" },
+                        {
+                            inlineData: {
+                                data: base64Data,
+                                mimeType: mimeType
+                            }
+                        }
+                    ]
+                }
+            ]
         });
 
-        return new Response(response.text, {
-            headers: { 'Content-Type': 'application/json' },
-        });
-        
-    } catch (error: unknown) {
-        console.error('Error processing request:', error);
-        
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        return new Response(
-            JSON.stringify({ error: 'Failed to process request', details: errorMessage }), 
-            { 
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
+        console.log('API Response:', response);
+
+        if (!response || !response.text) {
+            throw new Error('No response received from AI service');
+        }
+
+        const result = response.text;
+        if (!result) {
+            throw new Error('No text content in AI response');
+        }
+
+        console.log('AI Response received, length:', result.length);
+        return Response.json({ result });
+
+    } catch (error) {
+        console.error('Error processing file:', error);
+
+        // More specific error handling
+        if (error instanceof Error) {
+            if (error.message.includes('INVALID_ARGUMENT')) {
+                return Response.json({ error: 'Invalid image format. Please ensure the image is not corrupted and is in a supported format.' }, { status: 400 });
             }
-        );
+            if (error.message.includes('QUOTA_EXCEEDED')) {
+                return Response.json({ error: 'API quota exceeded. Please try again later.' }, { status: 429 });
+            }
+        }
+
+        return Response.json({ error: 'Failed to process file. Please try again with a different image.' }, { status: 500 });
     }
 }
