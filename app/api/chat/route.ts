@@ -15,8 +15,9 @@ export async function POST(request: Request) {
         
         if (history && history.length > 0) {
             conversationContext += "Previous conversation:\n";
-            history.forEach((msg: any) => {
-                conversationContext += `${msg.isUser ? 'User' : 'Assistant'}: ${msg.text}\n`;
+            history.forEach((msg: Record<string, unknown>) => {
+                const message = msg as { isUser: boolean; text: string };
+                conversationContext += `${message.isUser ? 'User' : 'Assistant'}: ${message.text}\n`;
             });
             conversationContext += "\n";
         }
@@ -27,20 +28,7 @@ export async function POST(request: Request) {
             model: 'gemini-2.5-flash',
             contents: [conversationContext],
             config: {
-                systemInstruction: `You are a helpful medical AI assistant. You are helping a user understand their medical analysis results. 
-                
-                Guidelines:
-                - Be empathetic and supportive
-                - Provide clear, easy-to-understand explanations
-                - Always remind users that this is for informational purposes only
-                - Encourage users to consult with healthcare professionals for medical advice
-                - If asked about specific treatments or medications, suggest consulting a doctor
-                - Be honest about limitations and uncertainties
-                - Use simple language and avoid complex medical jargon when possible
-                - When you need current medical information, use Google Search to find reliable sources
-                - Always cite sources when using external information
-                
-                Remember: You are providing educational information, not medical advice.`,
+                systemInstruction: process.env.SYSTEM_PROMPT,
                 tools: [{ googleSearch: {} }]
             }
         });
