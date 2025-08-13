@@ -121,8 +121,8 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <Card className="p-4 sm:p-8 lg:p-12 bg-white/60 backdrop-blur-xl border border-purple-100/50 shadow-2xl rounded-2xl sm:rounded-3xl">
+    <div className="w-full max-w-4xl mx-auto px-0 sm:px-6 lg:px-8">
+      <Card className="p-3 sm:p-8 lg:p-12 bg-white/60 backdrop-blur-xl border border-purple-100/50 shadow-2xl rounded-2xl sm:rounded-3xl">
         <div
           className={`relative transition-all duration-500 ease-out ${dragActive ? "upload-luxury scale-105" : "upload-luxury"
             } ${uploadedFile ? "border-emerald-400 bg-gradient-to-br from-emerald-50 to-green-50" : ""} 

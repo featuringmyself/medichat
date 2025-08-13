@@ -93,7 +93,7 @@ export function ForWhomWeCare() {
   }, [audiences.length])
 
   return (
-    <section id="for-whom" className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50">
+    <section id="for-whom" className="md:py-20 py-10 px-4 sm:px-6 lg:px-8 bg-slate-50">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="font-serif font-bold text-4xl text-slate-900 mb-4">For Whom We Care</h2>
@@ -121,11 +121,11 @@ export function ForWhomWeCare() {
                 className="p-8 text-center hover:shadow-lg transition-all duration-300 flex-shrink-0 w-80 md:w-auto snap-start snap-always"
                 style={{ scrollSnapAlign: 'start' }}
               >
-                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto md:mb-6 mb-1">
                   <Icon className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="font-serif font-bold text-2xl text-slate-900 mb-4">{audience.title}</h3>
-                <p className="text-slate-600 mb-6 leading-relaxed">{audience.description}</p>
+                <h3 className="font-serif font-bold text-2xl text-slate-900 md:mb-4 mb-0">{audience.title}</h3>
+                <p className="text-slate-600 md:mb-6 mb-0 leading-relaxed">{audience.description}</p>
                 <blockquote className="text-primary italic font-medium">{audience.story}</blockquote>
               </Card>
             )

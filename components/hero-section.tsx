@@ -37,12 +37,12 @@ export function HeroSection() {
             </div>
           </div>
 
-          <h1 className="font-serif font-bold text-6xl lg:text-7xl text-slate-900 mb-8 leading-[1.1]">
+          <h1 className="font-serif font-bold text-5xl lg:text-7xl text-slate-900 md:mb-8 mb-4 leading-[1.1]">
             Your AI Healthcare
             <span className="text-luxury-gradient block mt-2 gradient-animate">Companion</span>
           </h1>
 
-          <p className="md:text-2xl text-lg text-balance  text-slate-600 mb-12 leading-relaxed max-w-4xl mx-auto font-light">
+          <p className="md:text-2xl text-md text-balance  text-slate-600 mb-12 leading-relaxed max-w-4xl mx-auto font-light">
             MediChat intelligently reads prescriptions, analyzes medical information, and explains everything in clear,
             understandable language — empowering you to take control of your health journey.
           </p>
@@ -50,7 +50,7 @@ export function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
             <Link
               href="#pres_upload"
-              className="bg-primary text-white flex rounded-xl items-center justify-center hover:bg-primary/90 text-lg px-10 py-4 shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow hover:scale-105 active:scale-95"
+              className="bg-primary text-white flex rounded-xl items-center justify-center hover:bg-primary/90 md:text-lg text-base px-10 py-4 shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow hover:scale-105 active:scale-95"
             >
               <MessageCircle className="w-6 h-6 mr-2" />
               Upload Prescription
