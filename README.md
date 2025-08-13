@@ -26,7 +26,6 @@ A modern healthcare communication platform built with Next.js, designed to facil
 │   └── globals.css        # Global styles
 ├── components/            # Reusable UI components
 ├── lib/                   # Utility functions and configurations
-├── prisma/               # Database schema and migrations
 ├── public/               # Static assets
 └── types/                # TypeScript type definitions
 ```
@@ -35,10 +34,8 @@ A modern healthcare communication platform built with Next.js, designed to facil
 
 - **Frontend**: Next.js 14, React 18, TypeScript
 - **Styling**: Tailwind CSS, shadcn/ui components
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js
-- **Real-time**: WebSocket integration
-- **File Storage**: AWS S3 compatible storage
+- **Authentication**: Clerk
+- **AI Integration**: Google Gemini API
 - **Deployment**: Vercel
 
 ## 📋 Prerequisites
@@ -47,8 +44,7 @@ Before running this project, ensure you have:
 
 - Node.js 18.17 or later
 - npm, yarn, pnpm, or bun package manager
-- PostgreSQL database
-- Environment variables configured (see `.env.example`)
+- Environment variables configured (see below)
 
 ## 🚀 Getting Started
 
@@ -75,13 +71,7 @@ Before running this project, ensure you have:
    # Edit .env.local with your configuration
    ```
 
-4. **Set up the database**
-   ```bash
-   npx prisma generate
-   npx prisma db push
-   ```
-
-5. **Run the development server**
+4. **Run the development server**
    ```bash
    npm run dev
    # or
@@ -92,7 +82,7 @@ Before running this project, ensure you have:
    bun dev
    ```
 
-6. **Open your browser**
+5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## 📝 Environment Variables
@@ -100,22 +90,16 @@ Before running this project, ensure you have:
 Create a `.env.local` file with the following variables:
 
 ```env
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/medichat"
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your-clerk-publishable-key"
+CLERK_SECRET_KEY="your-clerk-secret-key"
 
-# NextAuth.js
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key"
+# Google Gemini API
+GEMINI_API_KEY="your-gemini-api-key"
 
-# OAuth Providers (optional)
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-
-# File Storage
-AWS_ACCESS_KEY_ID="your-aws-access-key"
-AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
-AWS_REGION="your-aws-region"
-AWS_BUCKET_NAME="your-s3-bucket-name"
+# AI System Prompts
+SYSTEM_PROMPT="your-system-prompt-for-ai"
+CHAT_SYSTEM_PROMPT="your-chat-system-prompt"
 ```
 
 ## 🧪 Testing
@@ -127,30 +111,9 @@ npm run test
 # Run tests in watch mode
 npm run test:watch
 
-# Run integration tests
-npm run test:integration
-
 # Generate test coverage
 npm run test:coverage
 ```
-
-## 📚 API Documentation
-
-API endpoints are available at `/api/*`. Key endpoints include:
-
-- `POST /api/auth/*` - Authentication endpoints
-- `GET/POST /api/messages` - Message operations
-- `GET/POST /api/appointments` - Appointment management
-- `POST /api/upload` - File upload endpoint
-
-## 🚀 Deployment
-
-The easiest way to deploy this Next.js app is using [Vercel](https://vercel.com/):
-
-1. Push your code to a Git repository
-2. Connect your repository to Vercel
-3. Configure environment variables in Vercel dashboard
-4. Deploy automatically on every push to main branch
 
 ## 🤝 Contributing
 
@@ -169,12 +132,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [Next.js](https://nextjs.org/) and [React](https://reactjs.org/)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Icons from [Lucide React](https://lucide.dev/)
-- Database management with [Prisma](https://prisma.io/)
+- Authentication with [Clerk](https://clerk.com/)
 
 ## 📞 Support
 
 For support, please create an issue in the GitHub repository or contact the development team.
-
----
 
 **Remember: This is a demonstration project and should not be used for actual medical consultations or healthcare decisions.**
