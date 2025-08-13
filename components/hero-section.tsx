@@ -42,7 +42,7 @@ export function HeroSection() {
             <span className="text-luxury-gradient block mt-2 gradient-animate">Companion</span>
           </h1>
 
-          <p className="md:text-2xl text-lg  text-slate-600 mb-12 leading-relaxed max-w-4xl mx-auto font-light">
+          <p className="md:text-2xl text-lg text-balance  text-slate-600 mb-12 leading-relaxed max-w-4xl mx-auto font-light">
             MediChat intelligently reads prescriptions, analyzes medical information, and explains everything in clear,
             understandable language — empowering you to take control of your health journey.
           </p>
