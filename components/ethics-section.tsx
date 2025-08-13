@@ -12,6 +12,8 @@ export function EthicsSection() {
             <Image
               src="/healthcare-ai-collaboration.png"
               alt="Healthcare professionals and patients using AI technology"
+              width={1024}
+              height={1024}
               className="rounded-2xl shadow-lg w-full"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent rounded-2xl"></div>

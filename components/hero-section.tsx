@@ -42,7 +42,7 @@ export function HeroSection() {
             <span className="text-luxury-gradient block mt-2 gradient-animate">Companion</span>
           </h1>
 
-          <p className="text-2xl text-slate-600 mb-12 leading-relaxed max-w-4xl mx-auto font-light">
+          <p className="md:text-2xl text-lg  text-slate-600 mb-12 leading-relaxed max-w-4xl mx-auto font-light">
             MediChat intelligently reads prescriptions, analyzes medical information, and explains everything in clear,
             understandable language — empowering you to take control of your health journey.
           </p>
@@ -53,14 +53,7 @@ export function HeroSection() {
               className="bg-primary hover:bg-primary/90 text-lg px-10 py-4 shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow"
             >
               <MessageCircle className="w-6 h-6 mr-3" />
-              Start Secure Analysis
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-primary/30 text-primary hover:bg-primary/5 text-lg px-10 py-4 bg-white/50 backdrop-blur-sm"
-            >
-              Watch Demo
+              Upload Prescription
             </Button>
           </div>
 
@@ -71,7 +64,7 @@ export function HeroSection() {
                   <span className="text-white text-sm font-bold">AI</span>
                 </div>
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm flex-1 border border-purple-100/30">
-                  <p className="text-slate-700 text-lg leading-relaxed">
+                  <p className="text-slate-700 md:text-lg text-xs md:leading-relaxed text-right">
                     Hello! I&apos;m here to help you understand your prescription. Upload a photo or PDF, and I&apos;ll provide
                     detailed insights about your medication, dosage, and important considerations.
                   </p>
@@ -79,7 +72,7 @@ export function HeroSection() {
               </div>
               <div className="flex items-start space-x-4 justify-end">
                 <div className="bg-gradient-to-r from-primary to-purple-600 text-white rounded-2xl p-4 shadow-lg max-w-sm">
-                  <p className="text-lg">
+                  <p className="text-left md:text-lg text-xs">
                     I have a prescription for Lisinopril. What should I know about potential side effects?
                   </p>
                 </div>
