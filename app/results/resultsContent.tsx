@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import ChatInterface from '@/components/ChatInterface';
 
 export default function ResultsContent() {
@@ -42,6 +43,18 @@ export default function ResultsContent() {
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-4xl mx-auto px-4">
+                {/* Back Button */}
+                <div className="mb-6">
+                    <Button 
+                        variant="ghost" 
+                        onClick={handleBackToUpload}
+                        className="text-gray-600 hover:text-gray-900 p-2"
+                    >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Upload
+                    </Button>
+                </div>
+
                 {/* Header */}
                 <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">

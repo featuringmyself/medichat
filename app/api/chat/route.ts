@@ -28,7 +28,7 @@ export async function POST(request: Request) {
             model: 'gemini-2.5-flash',
             contents: [conversationContext],
             config: {
-                systemInstruction: process.env.SYSTEM_PROMPT,
+                systemInstruction: process.env.CHAT_SYSTEM_PROMPT,
                 tools: [{ googleSearch: {} }]
             }
         });

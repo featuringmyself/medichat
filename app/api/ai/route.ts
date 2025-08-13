@@ -81,7 +81,7 @@ export async function POST(request: Request) {
             contents: [
                 {
                     parts: [
-                        { text: "What do you see in this image?" },
+                        { text: process.env.SYSTEM_PROMPT },
                         {
                             inlineData: {
                                 data: base64Data,
