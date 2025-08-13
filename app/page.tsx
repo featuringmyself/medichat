@@ -16,7 +16,7 @@ export default function HomePage() {
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-100/20 via-transparent to-purple-100/20"></div>
         <div className="container mx-auto px-6 lg:px-8 relative">
-          <div className="max-w-4xl mx-auto text-center mb-20">
+          <div className="max-w-4xl mx-auto text-center mb-20" id="pres_upload">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-8">
               <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
               AI-Powered Analysis

@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button"
 import { MessageCircle, Sparkles, Zap } from "lucide-react"
+import Link from "next/link"
 
 export function HeroSection() {
   return (
@@ -48,13 +48,13 @@ export function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-lg px-10 py-4 shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow"
+            <Link
+              href="#pres_upload"
+              className="bg-primary text-white flex rounded-xl items-center justify-center hover:bg-primary/90 text-lg px-10 py-4 shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow hover:scale-105 active:scale-95"
             >
-              <MessageCircle className="w-6 h-6 mr-3" />
+              <MessageCircle className="w-6 h-6 mr-2" />
               Upload Prescription
-            </Button>
+            </Link>
           </div>
 
           <div className="max-w-3xl mx-auto bg-white/60 backdrop-blur-xl rounded-3xl p-8 border border-purple-100/50 shadow-2xl">
