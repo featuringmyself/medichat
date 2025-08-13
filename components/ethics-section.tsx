@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card"
 import { Shield, Brain, Users2 } from "lucide-react"
+import Image from "next/image"
 
 export function EthicsSection() {
   return (
@@ -8,7 +9,7 @@ export function EthicsSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Human Element */}
           <div className="relative">
-            <img
+            <Image
               src="/healthcare-ai-collaboration.png"
               alt="Healthcare professionals and patients using AI technology"
               className="rounded-2xl shadow-lg w-full"

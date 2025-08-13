@@ -72,7 +72,7 @@ export function HeroSection() {
                 </div>
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm flex-1 border border-purple-100/30">
                   <p className="text-slate-700 text-lg leading-relaxed">
-                    Hello! I'm here to help you understand your prescription. Upload a photo or PDF, and I'll provide
+                    Hello! I&apos;m here to help you understand your prescription. Upload a photo or PDF, and I&apos;ll provide
                     detailed insights about your medication, dosage, and important considerations.
                   </p>
                 </div>
