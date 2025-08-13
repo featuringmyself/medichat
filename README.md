@@ -19,22 +19,18 @@ A modern healthcare communication platform built with Next.js, designed to facil
 
 ```
 ├── app/                    # Next.js 13+ App Router
-│   ├── (auth)/            # Authentication routes
-│   ├── dashboard/         # Main application dashboard
-│   ├── chat/              # Chat interface components
+│   ├── results/            # Chat interface components
 │   ├── api/               # API routes
 │   └── globals.css        # Global styles
 ├── components/            # Reusable UI components
 ├── lib/                   # Utility functions and configurations
 ├── public/               # Static assets
-└── types/                # TypeScript type definitions
 ```
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: Next.js 14, React 18, TypeScript
 - **Styling**: Tailwind CSS, shadcn/ui components
-- **Authentication**: Clerk
 - **AI Integration**: Google Gemini API
 - **Deployment**: Vercel
 
@@ -132,7 +128,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [Next.js](https://nextjs.org/) and [React](https://reactjs.org/)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Icons from [Lucide React](https://lucide.dev/)
-- Authentication with [Clerk](https://clerk.com/)
 
 ## 📞 Support
 
