@@ -5,6 +5,7 @@ import { InteractiveDemo } from "@/components/interactive-demo"
 import { ForWhomWeCare } from "@/components/for-whom-we-care"
 import { EthicsSection } from "@/components/ethics-section"
 import { Navigation } from "@/components/navigation"
+import Footer from "@/components/Footer"
 
 export default function HomePage() {
   return (
@@ -37,6 +38,8 @@ export default function HomePage() {
       <InteractiveDemo />
       <ForWhomWeCare />
       <EthicsSection />
+      <Footer />
+
 
     </main>
   )
