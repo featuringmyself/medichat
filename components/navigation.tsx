@@ -16,21 +16,14 @@ export function Navigation() {
               alt="Logo"
               className="md:max-w-[4rem] max-w-[3rem] h-auto"
             />
-            <span className="font-serif font-bold md:text-2xl text-xl text-slate-900">
+            <span className="font-serif font-bold md:text-2xl text-lg text-slate-900">
               MediChat
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center md:gap-4 gap-2 ">
             <UserButton />
             <SignInButton />
             <SignUpButton />
-            <Link
-              href="https://www.dodox.in/"
-              target="_blank"
-              className="bg-amber-400 px-3 py-2 font-semibold  rounded-xl flex gap-3 items-center text-md md:text-md ml-3"
-            >
-              Visit Dodox <FaLink />
-            </Link>
           </div>
         </div>
       </div>
