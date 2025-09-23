@@ -52,7 +52,7 @@ export function InteractiveDemo() {
   }, []);
 
   const handleFileUpload = useCallback(
-    async (file: File) => {
+    (file: File) => {
       // Check file size (25MB limit)
       if (file.size > 25 * 1024 * 1024) {
         setError("File size exceeds 25MB limit");
@@ -75,40 +75,20 @@ export function InteractiveDemo() {
         return;
       }
 
-      setIsProcessing(true);
-      setError(null);
-      setUploadedFile(file);
-      setActiveStep(1); // Move to analysis step
-
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await fetch("/api/ai", {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Upload failed");
-        }
-
-        // Move to insights step and then redirect
-        setActiveStep(2);
-        setTimeout(() => {
-          const encodedResult = encodeURIComponent(data.result);
-          const encodedFileName = encodeURIComponent(file.name);
-          router.push(
-            `/results?analysis=${encodedResult}&filename=${encodedFileName}`
-          );
-        }, 2000);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Upload failed");
-        setIsProcessing(false);
-        setActiveStep(0);
-      }
+      // Store file in sessionStorage and redirect
+      const fileData = {
+        name: file.name,
+        type: file.type,
+        size: file.size
+      };
+      sessionStorage.setItem('uploadFile', JSON.stringify(fileData));
+      
+      const reader = new FileReader();
+      reader.onload = () => {
+        sessionStorage.setItem('uploadFileData', reader.result as string);
+        router.push(`/results?loading=true&filename=${encodeURIComponent(file.name)}`);
+      };
+      reader.readAsDataURL(file);
     },
     [router]
   );
@@ -133,24 +113,8 @@ export function InteractiveDemo() {
     }
   };
 
-  const handleSamplePrescription = async () => {
-    setError(null);
-
-    try {
-      // Fetch the sample image from public directory
-      const response = await fetch("/prescription.png");
-      const blob = await response.blob();
-      const file = new File([blob], "sample.png", { type: "image/png" });
-
-      // Process the sample file
-      await handleFileUpload(file);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to process sample prescription"
-      );
-    }
+  const handleSamplePrescription = () => {
+    router.push('/results?loading=true&filename=sample.png');
   };
 
   return (
@@ -239,23 +203,36 @@ export function InteractiveDemo() {
                 <div className="flex justify-center space-x-4">
                   <SignedIn>
                     <Button
-                      className="bg-primary hover:bg-primary/90"
                       onClick={() => fileInputRef.current?.click()}
+                      size="lg"
+                      className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto"
                       disabled={isProcessing}
                     >
-                      {isProcessing ? "Processing..." : "Choose File"}
+                      <span className="sm:hidden">{isProcessing ? "Processing..." : "Choose File"}</span>
+                      <span className="hidden sm:inline">
+                        {isProcessing ? "Processing..." : "Choose File to Analyze"}
+                      </span>
                     </Button>
                   </SignedIn>
                   <SignedOut>
                     <SignInButton mode="modal">
-                      <span className="bg-primary hover:bg-primary/90 text-white px-3 flex items-center rounded-md font-medium">Choose File</span>
+                      <Button
+                        size="lg"
+                        className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto"
+                        disabled={isProcessing}
+                      >
+                        <span className="sm:hidden">Choose File</span>
+                        <span className="hidden sm:inline">
+                          Choose File to Analyze
+                        </span>
+                      </Button>
                     </SignInButton>
                   </SignedOut>
                   <Button
                     variant="outline"
-                    className="border-primary text-primary hover:bg-primary/10"
                     onClick={handleSamplePrescription}
                     disabled={isProcessing}
+                    className="border-primary text-primary hover:bg-primary/10"
                   >
                     Try Sample
                   </Button>

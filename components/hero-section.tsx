@@ -1,7 +1,56 @@
+"use client";
+
 import { MessageCircle, Sparkles, Zap } from "lucide-react"
-import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { useRef } from "react"
+import { useRouter } from "next/navigation"
+import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs"
 
 export function HeroSection() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  const handleFileUpload = (file: File) => {
+    // Check file size (25MB limit)
+    if (file.size > 25 * 1024 * 1024) {
+      return;
+    }
+
+    // Check file type
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg", 
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "application/pdf",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      return;
+    }
+
+    // Store file in sessionStorage and redirect
+    const fileData = {
+      name: file.name,
+      type: file.type,
+      size: file.size
+    };
+    sessionStorage.setItem('uploadFile', JSON.stringify(fileData));
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      sessionStorage.setItem('uploadFileData', reader.result as string);
+      router.push(`/results?loading=true&filename=${encodeURIComponent(file.name)}`);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFileUpload(e.target.files[0]);
+    }
+  };
+
   return (
     <section className="pt-32 pb-24 px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-transparent to-pink-50/30"></div>
@@ -48,13 +97,40 @@ export function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-            <Link
-              href="#pres_upload"
-              className="bg-primary text-white flex rounded-xl items-center justify-center hover:bg-primary/90 md:text-lg text-base px-10 py-4 shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow hover:scale-105 active:scale-95"
-            >
-              <MessageCircle className="w-6 h-6 mr-2" />
-              Upload Prescription
-            </Link>
+            <SignedIn>
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto hover:scale-105 active:scale-95"
+              >
+                <MessageCircle className="w-6 h-6 mr-2" />
+                <span className="sm:hidden">Upload</span>
+                <span className="hidden sm:inline">
+                  Upload Prescription
+                </span>
+              </Button>
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto hover:scale-105 active:scale-95"
+                >
+                  <MessageCircle className="w-6 h-6 mr-2" />
+                  <span className="sm:hidden">Upload</span>
+                  <span className="hidden sm:inline">
+                    Upload Prescription
+                  </span>
+                </Button>
+              </SignInButton>
+            </SignedOut>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".jpeg,.jpg,.png,.gif,.webp,.pdf"
+              onChange={handleFileInput}
+              className="hidden"
+            />
           </div>
 
           <div className="max-w-3xl mx-auto bg-white/60 backdrop-blur-xl rounded-3xl p-8 border border-purple-100/50 shadow-2xl">

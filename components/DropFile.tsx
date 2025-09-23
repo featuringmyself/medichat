@@ -148,11 +148,15 @@ export default function DropFile() {
                     <p className="font-light text-lg mt-1">Format: .jpeg, .png, .pdf & Max file size: 25 MB</p>
                     <div className="flex gap-3 mt-8 justify-center">
                         <Button
-                            className="bg-[#90119B] px-4 py-2 text-white font-medium"
                             onClick={handleBrowseClick}
+                            size="lg"
+                            className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto"
                             disabled={isUploading}
                         >
-                            {isUploading ? 'Processing...' : 'Browse Files'}
+                            <span className="sm:hidden">{isUploading ? 'Processing...' : 'Browse'}</span>
+                            <span className="hidden sm:inline">
+                                {isUploading ? 'Processing...' : 'Choose File to Analyze'}
+                            </span>
                         </Button>
                         <Button
                             variant="outline"

@@ -162,7 +162,7 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 lg:space-x-6 w-full sm:w-auto items-center">
+                <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 lg:space-x-6 w-full sm:w-auto items-start">
                   <SignedOut>
                     <SignUpButton mode="modal">
                       <div className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto rounded-2xl">

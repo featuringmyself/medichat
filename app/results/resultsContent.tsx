@@ -121,9 +121,9 @@ export default function ResultsContent() {
                 <div className="max-w-4xl mx-auto px-4">
                     <div className="mb-6">
                         <Button 
-                            variant="ghost" 
                             onClick={handleBackToUpload}
-                            className="text-gray-600 hover:text-gray-900 p-2"
+                            variant="ghost" 
+                            className="text-gray-600 hover:text-gray-900 p-2 cursor-pointer"
                         >
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Back to Upload
@@ -178,8 +178,8 @@ export default function ResultsContent() {
                 {/* Back Button */}
                 <div className="mb-6">
                     <Button 
-                        variant="ghost" 
                         onClick={handleBackToUpload}
+                        variant="ghost" 
                         className="text-gray-600 hover:text-gray-900 p-2"
                     >
                         <ArrowLeft className="h-4 w-4 mr-2" />
@@ -192,8 +192,8 @@ export default function ResultsContent() {
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-2xl font-bold text-gray-900">Medical Analysis Results</h1>
                         <Button 
-                            variant="outline" 
                             onClick={handleBackToUpload}
+                            variant="outline" 
                             className="text-sm"
                         >
                             Upload New File
