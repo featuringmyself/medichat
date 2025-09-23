@@ -129,26 +129,8 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
     setError(null);
   };
 
-  const handleSamplePrescription = async () => {
-    setLoadingButton("sample");
-    setError(null);
-
-    try {
-      // Fetch the sample image from public directory
-      const response = await fetch("/prescription.png");
-      const blob = await response.blob();
-      const file = new File([blob], "sample.png", { type: "image/png" });
-
-      // Process the sample file using handleFileUpload
-      await handleFileUpload(file, "sample");
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to process sample prescription"
-      );
-      setLoadingButton(null);
-    }
+  const handleSamplePrescription = () => {
+    router.push('/results?loading=true&filename=sample.png');
   };
 
   return (
@@ -251,13 +233,8 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
                     variant="outline"
                     size="lg"
                     className="border-primary text-primary hover:bg-primary hover:text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 w-full sm:w-auto"
-                    disabled={loadingButton !== null}
                   >
-                    {loadingButton === "sample" ? (
-                      <div className="animate-spin h-4 w-4 sm:h-5 sm:w-5 border-2 border-primary/30 border-t-primary rounded-full"></div>
-                    ) : (
-                      "Try Sample"
-                    )}
+                    Try Sample
                   </Button>
                 </div>
                 <input
@@ -317,13 +294,8 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
                       onClick={handleSamplePrescription}
                       size="lg"
                       className="bg-primary hover:bg-primary/90 text-white px-4 sm:px-6 lg:px-8 py-3 font-medium shadow-xl hover:shadow-2xl transition-all duration-300 w-full sm:w-auto"
-                      disabled={loadingButton !== null}
                     >
-                      {loadingButton === "sample" ? (
-                        <div className="animate-spin h-4 w-4 sm:h-5 sm:w-5 border-2 border-white/30 border-t-white rounded-full"></div>
-                      ) : (
-                        "Try Sample"
-                      )}
+                      Try Sample
                     </Button>
                   </div>
                 </>

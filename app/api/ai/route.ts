@@ -54,20 +54,9 @@ export async function POST(request: Request) {
             return Response.json({ error: 'Failed to process file data' }, { status: 400 });
         }
 
-        // Additional validation for image files
-        if (mimeType.startsWith('image/')) {
-            // Check if it's a valid image by looking at the base64 header
-            const imageHeaders = {
-                'image/png': 'iVBORw0KGgo',
-                'image/jpeg': '/9j/',
-                'image/gif': 'R0lGODlh',
-                'image/webp': 'UklGR'
-            };
-
-            const expectedHeader = imageHeaders[mimeType as keyof typeof imageHeaders];
-            if (expectedHeader && !base64Data.startsWith(expectedHeader)) {
-                return Response.json({ error: 'Invalid image format detected' }, { status: 400 });
-            }
+        // Basic validation - just ensure we have data
+        if (mimeType.startsWith('image/') && base64Data.length < 100) {
+            return Response.json({ error: 'Invalid image format. Please ensure the image is not corrupted and is in a supported format.' }, { status: 400 });
         }
 
         // Log minimal info for debugging (avoid sensitive data)

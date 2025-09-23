@@ -1,7 +1,5 @@
-import Link from "next/link";
-import { FaLink } from "react-icons/fa";
 import Image from "next/image";
-import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 
 export function Navigation() {
   return (
@@ -21,9 +19,13 @@ export function Navigation() {
             </span>
           </div>
           <div className="flex items-center md:gap-4 gap-2 ">
-            <UserButton />
-            <SignInButton />
-            <SignUpButton />
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
+            <SignedOut>
+              <SignInButton />
+              <SignUpButton />
+            </SignedOut>
           </div>
         </div>
       </div>
