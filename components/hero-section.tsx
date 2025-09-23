@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Sparkles, Zap } from "lucide-react"
+import { CloudUpload, Sparkles, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRef } from "react"
 import { useRouter } from "next/navigation"
@@ -62,12 +62,12 @@ export function HeroSection() {
           <div className="mb-12 flex justify-center">
             <div className="relative p-6 glass-effect rounded-2xl">
               <div className="flex items-center space-x-2">
-                {[...Array(7)].map((_, i) => (
+                {[32, 45, 38, 55, 42, 48, 35].map((height, i) => (
                   <div
                     key={i}
                     className="w-1.5 bg-gradient-to-t from-primary to-purple-400 rounded-full luxury-glow"
                     style={{
-                      height: `${Math.random() * 50 + 25}px`,
+                      height: `${height}px`,
                       animationDelay: `${i * 0.15}s`,
                     }}
                   />
@@ -103,7 +103,7 @@ export function HeroSection() {
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto hover:scale-105 active:scale-95"
               >
-                <MessageCircle className="w-6 h-6 mr-2" />
+                <CloudUpload className="w-6 h-6 mr-2" />
                 <span className="sm:hidden">Upload</span>
                 <span className="hidden sm:inline">
                   Upload Prescription
@@ -116,7 +116,7 @@ export function HeroSection() {
                   size="lg"
                   className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto hover:scale-105 active:scale-95"
                 >
-                  <MessageCircle className="w-6 h-6 mr-2" />
+                  <CloudUpload className="w-6 h-6 mr-2" />
                   <span className="sm:hidden">Upload</span>
                   <span className="hidden sm:inline">
                     Upload Prescription
