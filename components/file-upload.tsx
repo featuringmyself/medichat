@@ -23,11 +23,7 @@ interface FileUploadProps {
 
 export function FileUpload({ onFileSelect }: FileUploadProps) {
   const [dragActive, setDragActive] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [loadingButton, setLoadingButton] = useState<"file" | "sample" | null>(
-    null
-  );
+
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -43,7 +39,7 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
   }, []);
 
   const handleFileUpload = useCallback(
-    async (file: File, buttonType: "file" | "sample" = "file") => {
+    (file: File) => {
       // Check file size (25MB limit)
       if (file.size > 25 * 1024 * 1024) {
         setError("File size exceeds 25MB limit");
@@ -66,40 +62,22 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
         return;
       }
 
-      setIsProcessing(true);
-      setLoadingButton(buttonType);
-      setError(null);
-      setUploadedFile(file);
-      onFileSelect?.(file);
-
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await fetch("/api/ai", {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Upload failed");
-        }
-
-        // Redirect to results page with the analysis
-        const encodedResult = encodeURIComponent(data.result);
-        const encodedFileName = encodeURIComponent(file.name);
-        router.push(
-          `/results?analysis=${encodedResult}&filename=${encodedFileName}`
-        );
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Upload failed");
-        setIsProcessing(false);
-        setLoadingButton(null);
-      }
+      // Store file in sessionStorage and redirect
+      const fileData = {
+        name: file.name,
+        type: file.type,
+        size: file.size
+      };
+      sessionStorage.setItem('uploadFile', JSON.stringify(fileData));
+      
+      const reader = new FileReader();
+      reader.onload = () => {
+        sessionStorage.setItem('uploadFileData', reader.result as string);
+        router.push(`/results?loading=true&filename=${encodeURIComponent(file.name)}`);
+      };
+      reader.readAsDataURL(file);
     },
-    [onFileSelect, router]
+    [router]
   );
 
   const handleDrop = useCallback(
@@ -118,16 +96,11 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      handleFileUpload(e.target.files[0], "file");
+      handleFileUpload(e.target.files[0]);
     }
   };
 
-  const resetUpload = () => {
-    setUploadedFile(null);
-    setIsProcessing(false);
-    setLoadingButton(null);
-    setError(null);
-  };
+
 
   const handleSamplePrescription = () => {
     router.push('/results?loading=true&filename=sample.png');
@@ -139,20 +112,13 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
         <div
           className={`relative transition-all duration-500 ease-out ${
             dragActive ? "upload-luxury scale-105" : "upload-luxury"
-          } ${
-            uploadedFile
-              ? "border-emerald-400 bg-gradient-to-br from-emerald-50 to-green-50"
-              : ""
-          } 
-          rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-12 text-center`}
+          } rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-12 text-center`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
         >
-          {!uploadedFile ? (
-            <>
-              <div className="flex flex-col items-center space-y-6 sm:space-y-8">
+          <div className="flex flex-col items-center space-y-6 sm:space-y-8">
                 <div className="relative">
                   <div className="p-4 sm:p-6 bg-gradient-to-br from-primary/10 to-purple-200/20 rounded-2xl sm:rounded-3xl luxury-glow">
                     <Upload className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-primary" />
@@ -212,30 +178,24 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
                       onClick={() => fileInputRef.current?.click()}
                       size="lg"
                       className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto"
-                      disabled={loadingButton !== null}
                     >
-                      {loadingButton === "file" ? (
-                        <div className="animate-spin h-4 w-4 sm:h-5 sm:w-5 border-2 border-white/30 border-t-white rounded-full"></div>
-                      ) : (
-                        <>
-                          <>
-                            <span className="sm:hidden">Choose File</span>
-                            <span className="hidden sm:inline">
-                              Choose File to Analyze
-                            </span>
-                          </>
-                        </>
-                      )}
+                      <span className="sm:hidden">Choose File</span>
+                      <span className="hidden sm:inline">
+                        Choose File to Analyze
+                      </span>
                     </Button>
                   </SignedIn>
-                  <Button
-                    onClick={handleSamplePrescription}
-                    variant="outline"
-                    size="lg"
-                    className="border-primary text-primary hover:bg-primary hover:text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 w-full sm:w-auto"
-                  >
-                    Try Sample
-                  </Button>
+                  <div className="flex flex-col items-center space-y-1">
+                    <Button
+                      onClick={handleSamplePrescription}
+                      variant="outline"
+                      size="lg"
+                      className="border-primary text-primary hover:bg-primary hover:text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 w-full sm:w-auto"
+                    >
+                      Try Sample
+                    </Button>
+                    <span className="text-xs text-gray-500">No signup required</span>
+                  </div>
                 </div>
                 <input
                   ref={fileInputRef}
@@ -245,63 +205,6 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
                   className="hidden"
                 />
               </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center space-y-6 sm:space-y-8">
-              {isProcessing ? (
-                <>
-                  <div className="relative">
-                    <div className="p-4 sm:p-6 bg-gradient-to-br from-primary/10 to-purple-200/20 rounded-2xl sm:rounded-3xl">
-                      <div className="animate-spin h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 border-3 sm:border-4 border-primary/30 border-t-primary rounded-full"></div>
-                    </div>
-                    <div className="absolute inset-0 luxury-glow rounded-2xl sm:rounded-3xl"></div>
-                  </div>
-                  <div className="space-y-3 sm:space-y-4 text-center px-4 sm:px-0">
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 font-serif">
-                      Analyzing Your Prescription
-                    </h3>
-                    <p className="text-sm sm:text-base lg:text-lg text-gray-600">
-                      Our advanced AI is carefully reviewing your document...
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="p-4 sm:p-6 bg-gradient-to-br from-emerald-100 to-green-100 rounded-2xl sm:rounded-3xl luxury-glow">
-                    <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-emerald-600" />
-                  </div>
-                  <div className="space-y-3 sm:space-y-4 text-center px-4 sm:px-0">
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 font-serif">
-                      Upload Successful!
-                    </h3>
-                    <p className="text-sm sm:text-base lg:text-lg text-gray-600 break-all sm:break-normal">
-                      <span className="font-medium">{uploadedFile.name}</span>
-                      <span className="text-gray-500 ml-2">
-                        ({(uploadedFile.size / 1024 / 1024).toFixed(2)} MB)
-                      </span>
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 lg:space-x-6 w-full sm:w-auto">
-                    <Button
-                      onClick={resetUpload}
-                      variant="outline"
-                      size="lg"
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/50 px-4 sm:px-6 lg:px-8 py-3 font-medium w-full sm:w-auto"
-                    >
-                      Upload Another
-                    </Button>
-                    <Button
-                      onClick={handleSamplePrescription}
-                      size="lg"
-                      className="bg-primary hover:bg-primary/90 text-white px-4 sm:px-6 lg:px-8 py-3 font-medium shadow-xl hover:shadow-2xl transition-all duration-300 w-full sm:w-auto"
-                    >
-                      Try Sample
-                    </Button>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
         </div>
       </Card>
 

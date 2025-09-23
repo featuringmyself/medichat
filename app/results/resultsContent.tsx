@@ -14,6 +14,47 @@ export default function ResultsContent() {
     const [showChat, setShowChat] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    const processUploadedFile = useCallback(async () => {
+        try {
+            const fileDataStr = sessionStorage.getItem('uploadFileData');
+            const fileInfoStr = sessionStorage.getItem('uploadFile');
+            
+            if (!fileDataStr || !fileInfoStr) {
+                throw new Error('No file data found');
+            }
+            
+            const fileInfo = JSON.parse(fileInfoStr);
+            const response = await fetch(fileDataStr);
+            const blob = await response.blob();
+            const file = new File([blob], fileInfo.name, { type: fileInfo.type });
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const apiResponse = await fetch('/api/ai', {
+                method: 'POST',
+                body: formData,
+            });
+            
+            const data = await apiResponse.json();
+            
+            if (apiResponse.ok) {
+                setAnalysis(data.result);
+                setIsLoading(false);
+                // Clean up sessionStorage
+                sessionStorage.removeItem('uploadFileData');
+                sessionStorage.removeItem('uploadFile');
+            } else {
+                throw new Error(data.error || 'Analysis failed');
+            }
+        } catch (error) {
+            setIsLoading(false);
+            sessionStorage.removeItem('uploadFileData');
+            sessionStorage.removeItem('uploadFile');
+            router.push('/?error=upload-failed');
+        }
+    }, [router]);
+
     const processSamplePrescription = useCallback(async () => {
         try {
             const response = await fetch('/prescription.png');
@@ -53,8 +94,14 @@ export default function ResultsContent() {
         
         if (loadingParam === 'true') {
             setIsLoading(true);
-            // Process sample prescription
-            processSamplePrescription();
+            const uploadFileData = sessionStorage.getItem('uploadFileData');
+            if (uploadFileData) {
+                // Process uploaded file
+                processUploadedFile();
+            } else {
+                // Process sample prescription
+                processSamplePrescription();
+            }
         } else if (analysisParam) {
             setAnalysis(decodeURIComponent(analysisParam));
         }
@@ -62,7 +109,7 @@ export default function ResultsContent() {
         if (filenameParam) {
             setFilename(decodeURIComponent(filenameParam));
         }
-    }, [searchParams, processSamplePrescription]);
+    }, [searchParams, processSamplePrescription, processUploadedFile]);
 
     const handleBackToUpload = () => {
         router.push('/');
