@@ -63,7 +63,9 @@ export function FileUpload({}: FileUploadProps) {
         return;
       }
 
-      // Store file in sessionStorage and redirect
+      setError(null);
+
+      // Store file data for processing on results page
       const fileData = {
         name: file.name,
         type: file.type,
@@ -74,6 +76,7 @@ export function FileUpload({}: FileUploadProps) {
       const reader = new FileReader();
       reader.onload = () => {
         sessionStorage.setItem('uploadFileData', reader.result as string);
+        // Redirect to results page immediately
         router.push(`/results?loading=true&filename=${encodeURIComponent(file.name)}`);
       };
       reader.readAsDataURL(file);

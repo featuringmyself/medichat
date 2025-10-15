@@ -28,65 +28,29 @@ export default function DropFile() {
         setError(null);
 
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await fetch('/api/ai', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Upload failed');
-            }
-
-            // Redirect to results page with the analysis
-            const encodedResult = encodeURIComponent(data.result);
-            const encodedFileName = encodeURIComponent(file.name);
-            router.push(`/results?analysis=${encodedResult}&filename=${encodedFileName}`);
+            // Store file data for processing on results page
+            const fileData = {
+                name: file.name,
+                type: file.type,
+                size: file.size
+            };
+            sessionStorage.setItem('uploadFile', JSON.stringify(fileData));
+            
+            const reader = new FileReader();
+            reader.onload = () => {
+                sessionStorage.setItem('uploadFileData', reader.result as string);
+                // Redirect to results page immediately
+                router.push(`/results?loading=true&filename=${encodeURIComponent(file.name)}`);
+            };
+            reader.readAsDataURL(file);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Upload failed');
-        } finally {
             setIsUploading(false);
         }
     };
 
-    const handleSamplePrescription = async () => {
-        setIsUploading(true);
-        setError(null);
-
-        try {
-            // Fetch the sample image from public directory
-            const response = await fetch('/prescription.png');
-            const blob = await response.blob();
-            const file = new File([blob], 'sample.png', { type: 'image/png' });
-
-            // Process the sample file
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const aiResponse = await fetch('/api/ai', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await aiResponse.json();
-
-            if (!aiResponse.ok) {
-                throw new Error(data.error || 'Processing failed');
-            }
-
-            // Redirect to results page with the analysis
-            const encodedResult = encodeURIComponent(data.result);
-            const encodedFileName = encodeURIComponent('Sample Prescription');
-            router.push(`/results?analysis=${encodedResult}&filename=${encodedFileName}`);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to process sample prescription');
-        } finally {
-            setIsUploading(false);
-        }
+    const handleSamplePrescription = () => {
+        router.push('/results?loading=true&filename=sample.png');
     };
 
     const handleDrop = (e: React.DragEvent) => {

@@ -114,6 +114,17 @@ export default function ChatInterface({ prescriptionData }: ChatInterfaceProps) 
         setInputText('');
         setIsLoading(true);
 
+        // Create a placeholder AI message that will be updated with streaming content
+        const aiMessageId = (Date.now() + 1).toString();
+        const aiMessage: Message = {
+            id: aiMessageId,
+            text: '',
+            isUser: false,
+            timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, aiMessage]);
+
         try {
             // Prepare request payload with proper structure
             const requestPayload = {
@@ -133,6 +144,7 @@ export default function ChatInterface({ prescriptionData }: ChatInterfaceProps) 
                 }))
             };
 
+            // Use fetch with streaming
             const response = await fetch('/api/ai/v2', {
                 method: 'POST',
                 headers: {
@@ -141,34 +153,67 @@ export default function ChatInterface({ prescriptionData }: ChatInterfaceProps) 
                 body: JSON.stringify(requestPayload)
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to get response');
+                throw new Error('Failed to get response');
             }
 
-            // Store thread ID for future requests
-            if (data.threadId && typeof window !== 'undefined') {
-                sessionStorage.setItem('chatThreadId', data.threadId);
+            // Handle streaming response
+            const reader = response.body?.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            if (reader) {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || ''; // Keep incomplete line in buffer
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                
+                                if (data.type === 'metadata') {
+                                    // Store thread ID for future requests
+                                    if (data.threadId && typeof window !== 'undefined') {
+                                        sessionStorage.setItem('chatThreadId', data.threadId);
+                                    }
+                                } else if (data.type === 'chunk') {
+                                    // Update the AI message with streaming content
+                                    setMessages(prev => prev.map(msg => 
+                                        msg.id === aiMessageId 
+                                            ? { ...msg, text: msg.text + data.content }
+                                            : msg
+                                    ));
+                                } else if (data.type === 'done') {
+                                    // Streaming complete
+                                    setIsLoading(false);
+                                    return;
+                                } else if (data.type === 'error') {
+                                    throw new Error(data.error || 'Streaming error');
+                                }
+                            } catch (parseError) {
+                                console.error('Error parsing SSE data:', parseError);
+                            }
+                        }
+                    }
+                }
             }
-
-            const aiMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                text: data.response,
-                isUser: false,
-                timestamp: new Date()
-            };
-
-            setMessages(prev => [...prev, aiMessage]);
         } catch (error) {
             console.error('Chat error:', error);
             const errorMessage: Message = {
-                id: (Date.now() + 1).toString(),
+                id: aiMessageId,
                 text: 'Sorry, I encountered an error. Please try again.',
                 isUser: false,
                 timestamp: new Date()
             };
-            setMessages(prev => [...prev, errorMessage]);
+            setMessages(prev => prev.map(msg => 
+                msg.id === aiMessageId ? errorMessage : msg
+            ));
         } finally {
             setIsLoading(false);
         }
@@ -230,7 +275,12 @@ export default function ChatInterface({ prescriptionData }: ChatInterfaceProps) 
                     <div className="flex justify-start">
                         <div className="bg-white text-gray-800 border px-4 py-2 rounded-lg">
                             <div className="flex items-center space-x-2">
-                                <div className="animate-pulse">Thinking...</div>
+                                <div className="flex space-x-1">
+                                    <div className="w-1 h-1 bg-gray-400 rounded-full bounce-delayed"></div>
+                                    <div className="w-1 h-1 bg-gray-400 rounded-full bounce-delayed"></div>
+                                    <div className="w-1 h-1 bg-gray-400 rounded-full bounce-delayed"></div>
+                                </div>
+                                <div className="text-sm text-gray-500">Starting response...</div>
                             </div>
                         </div>
                     </div>
