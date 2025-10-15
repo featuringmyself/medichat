@@ -8,7 +8,6 @@ import {
   Upload,
   FileText,
   ImageIcon,
-  CheckCircle,
   AlertCircle,
   Sparkles,
 } from "lucide-react";
@@ -18,10 +17,10 @@ import { useRouter } from "next/navigation";
 import { SignedIn, SignedOut, SignUpButton } from "@clerk/nextjs";
 
 interface FileUploadProps {
-  onFileSelect?: (file: File) => void;
+  // onFileSelect prop removed as it's not used
 }
 
-export function FileUpload({ onFileSelect }: FileUploadProps) {
+export function FileUpload({}: FileUploadProps) {
   const [dragActive, setDragActive] = useState(false);
 
   const [error, setError] = useState<string | null>(null);

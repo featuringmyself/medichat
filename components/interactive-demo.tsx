@@ -17,8 +17,6 @@ import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 export function InteractiveDemo() {
   const [activeStep, setActiveStep] = useState(0);
   const [dragActive, setDragActive] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -192,25 +190,18 @@ export function InteractiveDemo() {
                 <p className="text-slate-600 mb-6">
                   Drag and drop or click to upload your prescription image
                 </p>
-                {uploadedFile && !isProcessing ? (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-center space-x-2 text-emerald-600 mb-2">
-                      <CheckCircle className="w-5 h-5" />
-                      <span className="font-medium">{uploadedFile.name}</span>
-                    </div>
-                  </div>
-                ) : null}
+                {/* File upload status removed as variables are not used */}
                 <div className="flex justify-center space-x-4">
                   <SignedIn>
                     <Button
                       onClick={() => fileInputRef.current?.click()}
                       size="lg"
                       className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto"
-                      disabled={isProcessing}
+                      disabled={false}
                     >
-                      <span className="sm:hidden">{isProcessing ? "Processing..." : "Choose File"}</span>
+                      <span className="sm:hidden">Choose File</span>
                       <span className="hidden sm:inline">
-                        {isProcessing ? "Processing..." : "Choose File to Analyze"}
+                        Choose File to Analyze
                       </span>
                     </Button>
                   </SignedIn>
@@ -219,7 +210,7 @@ export function InteractiveDemo() {
                       <Button
                         size="lg"
                         className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 luxury-glow w-full sm:w-auto"
-                        disabled={isProcessing}
+                        disabled={false}
                       >
                         <span className="sm:hidden">Choose File</span>
                         <span className="hidden sm:inline">
@@ -231,7 +222,7 @@ export function InteractiveDemo() {
                   <Button
                     variant="outline"
                     onClick={handleSamplePrescription}
-                    disabled={isProcessing}
+                    disabled={false}
                     className="border-primary text-primary hover:bg-primary/10"
                   >
                     Try Sample
@@ -255,12 +246,7 @@ export function InteractiveDemo() {
                 <h3 className="font-serif font-bold text-xl mb-4">
                   AI Analysis in Progress
                 </h3>
-                {uploadedFile && (
-                  <p className="text-slate-600 mb-6">
-                    Analyzing{" "}
-                    <span className="font-medium">{uploadedFile.name}</span>...
-                  </p>
-                )}
+                {/* File analysis status removed as variables are not used */}
                 <div className="space-y-4 text-left max-w-sm mx-auto">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>

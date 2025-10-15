@@ -41,7 +41,7 @@ interface ChatInterfaceProps {
     prescriptionData?: PrescriptionData;
 }
 
-export default function ChatInterface({ initialContext, prescriptionData }: ChatInterfaceProps) {
+export default function ChatInterface({ prescriptionData }: ChatInterfaceProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -144,13 +144,13 @@ export default function ChatInterface({ initialContext, prescriptionData }: Chat
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 && (
                     <div className="text-center text-gray-500 py-8">
-                        <p className="text-lg font-medium mb-2">Hi! I'm here to help you understand your prescription.</p>
+                        <p className="text-lg font-medium mb-2">Hi! I&apos;m here to help you understand your prescription.</p>
                         <p className="mb-4">Ask me anything about your medical analysis!</p>
                         <div className="text-sm space-y-1">
-                            <p>💊 "What does this medication do?"</p>
-                            <p>⚠️ "Are there any side effects I should know about?"</p>
-                            <p>📋 "How should I take this medication?"</p>
-                            <p>🤔 "Can you explain this part of the analysis?"</p>
+                            <p>💊 &quot;What does this medication do?&quot;</p>
+                            <p>⚠️ &quot;Are there any side effects I should know about?&quot;</p>
+                            <p>📋 &quot;How should I take this medication?&quot;</p>
+                            <p>🤔 &quot;Can you explain this part of the analysis?&quot;</p>
                         </div>
                     </div>
                 )}
