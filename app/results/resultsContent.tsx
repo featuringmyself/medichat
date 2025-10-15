@@ -1,10 +1,28 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileText, MessageCircle } from 'lucide-react';
 import ChatInterface from '@/components/ChatInterface';
+
+// Types for better type safety
+interface PrescriptionData {
+    filename: string;
+    analysis: string;
+    uploadDate: Date;
+    fileType: string;
+}
+
+interface ChatContext {
+    prescriptionData: PrescriptionData;
+    conversationHistory: Array<{
+        id: string;
+        text: string;
+        isUser: boolean;
+        timestamp: Date;
+    }>;
+}
 
 export default function ResultsContent() {
     const searchParams = useSearchParams();
@@ -13,18 +31,29 @@ export default function ResultsContent() {
     const [filename, setFilename] = useState<string>('');
     const [showChat, setShowChat] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
+    // Enhanced file processing with better error handling and prescription data extraction
     const processUploadedFile = useCallback(async () => {
         try {
+            if (typeof window === 'undefined') {
+                throw new Error('Session storage not available');
+            }
+            
             const fileDataStr = sessionStorage.getItem('uploadFileData');
             const fileInfoStr = sessionStorage.getItem('uploadFile');
             
             if (!fileDataStr || !fileInfoStr) {
-                throw new Error('No file data found');
+                throw new Error('No file data found in session storage');
             }
             
             const fileInfo = JSON.parse(fileInfoStr);
             const response = await fetch(fileDataStr);
+            
+            if (!response.ok) {
+                throw new Error('Failed to retrieve file data from session storage');
+            }
+            
             const blob = await response.blob();
             const file = new File([blob], fileInfo.name, { type: fileInfo.type });
             
@@ -36,24 +65,47 @@ export default function ResultsContent() {
                 body: formData,
             });
             
+            if (!apiResponse.ok) {
+                const errorData = await apiResponse.json().catch(() => ({ error: 'Unknown error occurred' }));
+                throw new Error(errorData.error || 'Analysis failed');
+            }
+            
             const data = await apiResponse.json();
             
-            if (apiResponse.ok) {
-                setAnalysis(data.result);
-                setIsLoading(false);
+            if (!data.result) {
+                throw new Error('No analysis result received from server');
+            }
+            
+            setAnalysis(data.result);
+            setFilename(fileInfo.name);
+            setError(null);
+            
+            // Store prescription data for chat context
+            const prescriptionData: PrescriptionData = {
+                filename: fileInfo.name,
+                analysis: data.result,
+                uploadDate: new Date(),
+                fileType: fileInfo.type
+            };
+            
+            if (typeof window !== 'undefined') {
+                sessionStorage.setItem('prescriptionData', JSON.stringify(prescriptionData));
                 // Clean up sessionStorage
                 sessionStorage.removeItem('uploadFileData');
                 sessionStorage.removeItem('uploadFile');
-            } else {
-                throw new Error(data.error || 'Analysis failed');
             }
+            
         } catch (error) {
+            console.error('Error processing uploaded file:', error);
+            setError(error instanceof Error ? error.message : 'Failed to process uploaded file');
+            if (typeof window !== 'undefined') {
+                sessionStorage.removeItem('uploadFileData');
+                sessionStorage.removeItem('uploadFile');
+            }
+        } finally {
             setIsLoading(false);
-            sessionStorage.removeItem('uploadFileData');
-            sessionStorage.removeItem('uploadFile');
-            router.push('/?error=upload-failed');
         }
-    }, [router]);
+    }, []);
 
     const processSamplePrescription = useCallback(async () => {
         try {
@@ -63,7 +115,7 @@ export default function ResultsContent() {
             }
             
             const blob = await response.blob();
-            const file = new File([blob], 'sample.png', { type: 'image/png' });
+            const file = new File([blob], 'sample-prescription.png', { type: 'image/png' });
             
             const formData = new FormData();
             formData.append('file', file);
@@ -73,20 +125,42 @@ export default function ResultsContent() {
                 body: formData,
             });
             
+            if (!apiResponse.ok) {
+                const errorData = await apiResponse.json().catch(() => ({ error: 'Unknown error occurred' }));
+                throw new Error(errorData.error || 'Analysis failed');
+            }
+            
             const data = await apiResponse.json();
             
-            if (apiResponse.ok) {
-                setAnalysis(data.result);
-                setIsLoading(false);
-            } else {
-                throw new Error(data.error || 'Analysis failed');
+            if (!data.result) {
+                throw new Error('No analysis result received from server');
             }
+            
+            setAnalysis(data.result);
+            setFilename('Sample Prescription');
+            setError(null);
+            
+            // Store prescription data for chat context
+            const prescriptionData: PrescriptionData = {
+                filename: 'Sample Prescription',
+                analysis: data.result,
+                uploadDate: new Date(),
+                fileType: 'image/png'
+            };
+            
+            if (typeof window !== 'undefined') {
+                sessionStorage.setItem('prescriptionData', JSON.stringify(prescriptionData));
+            }
+            
         } catch (error) {
+            console.error('Error processing sample prescription:', error);
+            setError(error instanceof Error ? error.message : 'Failed to process sample prescription');
+        } finally {
             setIsLoading(false);
-            router.push('/?error=sample-failed');
         }
-    }, [router]);
+    }, []);
 
+    // Enhanced useEffect with better prescription data handling
     useEffect(() => {
         const analysisParam = searchParams.get('analysis');
         const filenameParam = searchParams.get('filename');
@@ -103,7 +177,22 @@ export default function ResultsContent() {
                 processSamplePrescription();
             }
         } else if (analysisParam) {
-            setAnalysis(decodeURIComponent(analysisParam));
+            const decodedAnalysis = decodeURIComponent(analysisParam);
+            setAnalysis(decodedAnalysis);
+            
+            // Store prescription data for chat context if not already stored
+            if (typeof window !== 'undefined') {
+                const existingData = sessionStorage.getItem('prescriptionData');
+                if (!existingData && filenameParam) {
+                    const prescriptionData: PrescriptionData = {
+                        filename: decodeURIComponent(filenameParam),
+                        analysis: decodedAnalysis,
+                        uploadDate: new Date(),
+                        fileType: 'unknown'
+                    };
+                    sessionStorage.setItem('prescriptionData', JSON.stringify(prescriptionData));
+                }
+            }
         }
         
         if (filenameParam) {
@@ -111,9 +200,89 @@ export default function ResultsContent() {
         }
     }, [searchParams, processSamplePrescription, processUploadedFile]);
 
+    // Memoized prescription context for chat
+    const prescriptionContext = useMemo(() => {
+        // Check if we're on the client side before accessing sessionStorage
+        if (typeof window === 'undefined') return null;
+        
+        const prescriptionDataStr = sessionStorage.getItem('prescriptionData');
+        if (!prescriptionDataStr) return null;
+        
+        try {
+            const parsedData = JSON.parse(prescriptionDataStr);
+            // Convert uploadDate string back to Date object
+            const prescriptionData: PrescriptionData = {
+                ...parsedData,
+                uploadDate: new Date(parsedData.uploadDate)
+            };
+            return {
+                prescriptionData,
+                conversationHistory: [] // Will be managed by ChatInterface
+            };
+        } catch (error) {
+            console.error('Error parsing prescription data:', error);
+            return null;
+        }
+    }, [analysis, filename]);
+
     const handleBackToUpload = () => {
+        // Clear prescription data when navigating back
+        if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('prescriptionData');
+        }
         router.push('/');
     };
+
+    const handleRetry = () => {
+        setError(null);
+        setIsLoading(true);
+        if (typeof window !== 'undefined') {
+            const uploadFileData = sessionStorage.getItem('uploadFileData');
+            if (uploadFileData) {
+                processUploadedFile();
+            } else {
+                processSamplePrescription();
+            }
+        } else {
+            processSamplePrescription();
+        }
+    };
+
+    // Error state
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-8">
+                <div className="max-w-4xl mx-auto px-4">
+                    <div className="mb-6">
+                        <Button 
+                            onClick={handleBackToUpload}
+                            variant="ghost" 
+                            className="text-gray-600 hover:text-gray-900 p-2"
+                        >
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back to Upload
+                        </Button>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+                        <div className="text-red-500 mb-4">
+                            <FileText className="h-12 w-12 mx-auto mb-2" />
+                            <h2 className="text-xl font-semibold">Analysis Failed</h2>
+                        </div>
+                        <p className="text-gray-600 mb-6">{error}</p>
+                        <div className="flex gap-3 justify-center">
+                            <Button onClick={handleRetry} className="bg-[#90119B] hover:bg-purple-700">
+                                Try Again
+                            </Button>
+                            <Button onClick={handleBackToUpload} variant="outline">
+                                Upload New File
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (isLoading) {
         return (
@@ -190,7 +359,10 @@ export default function ResultsContent() {
                 {/* Header */}
                 <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
-                        <h1 className="text-2xl font-bold text-gray-900">Medical Analysis Results</h1>
+                        <div className="flex items-center gap-3">
+                            <FileText className="h-8 w-8 text-[#90119B]" />
+                            <h1 className="text-2xl font-bold text-gray-900">Medical Analysis Results</h1>
+                        </div>
                         <Button 
                             onClick={handleBackToUpload}
                             variant="outline" 
@@ -200,7 +372,24 @@ export default function ResultsContent() {
                         </Button>
                     </div>
                     {filename && (
-                        <p className="text-gray-600 text-sm">File: {filename}</p>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <FileText className="h-4 w-4 text-gray-500" />
+                                <span className="text-sm font-medium text-gray-700">Prescription Details</span>
+                            </div>
+                            <p className="text-gray-600 text-sm">File: {filename}</p>
+                            {prescriptionContext && (
+                                <p className="text-gray-500 text-xs mt-1">
+                                    Analyzed on: {prescriptionContext.prescriptionData.uploadDate instanceof Date 
+                                        ? prescriptionContext.prescriptionData.uploadDate.toLocaleDateString() 
+                                        : new Date(prescriptionContext.prescriptionData.uploadDate).toLocaleDateString()
+                                    } at {prescriptionContext.prescriptionData.uploadDate instanceof Date 
+                                        ? prescriptionContext.prescriptionData.uploadDate.toLocaleTimeString() 
+                                        : new Date(prescriptionContext.prescriptionData.uploadDate).toLocaleTimeString()
+                                    }
+                                </p>
+                            )}
+                        </div>
                     )}
                 </div>
 
@@ -239,18 +428,33 @@ export default function ResultsContent() {
                 {/* Chat Toggle */}
                 <div className="bg-white rounded-lg shadow-sm p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold text-gray-900">Have Questions?</h2>
+                        <div className="flex items-center gap-3">
+                            <MessageCircle className="h-6 w-6 text-[#90119B]" />
+                            <h2 className="text-xl font-semibold text-gray-900">Have Questions About Your Prescription?</h2>
+                        </div>
                         <Button 
                             onClick={() => setShowChat(!showChat)}
                             className="bg-[#90119B] hover:bg-purple-700"
                         >
-                            {showChat ? 'Hide Chat' : 'Start Chat'}
+                            {showChat ? 'Hide Chat' : 'Start Conversation'}
                         </Button>
                     </div>
                     
-                    {showChat && (
+                    {!showChat && (
+                        <div className="text-center py-4">
+                            <p className="text-gray-600 mb-2">Ask me anything about your prescription analysis!</p>
+                            <p className="text-sm text-gray-500">
+                                Try: "What does this medication do?" or "Are there any side effects I should know about?"
+                            </p>
+                        </div>
+                    )}
+                    
+                    {showChat && prescriptionContext && (
                         <div className="mt-4">
-                            <ChatInterface initialContext={analysis} />
+                            <ChatInterface 
+                                initialContext={analysis}
+                                prescriptionData={prescriptionContext.prescriptionData}
+                            />
                         </div>
                     )}
                 </div>

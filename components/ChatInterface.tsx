@@ -29,11 +29,19 @@ interface Message {
     timestamp: Date;
 }
 
-interface ChatInterfaceProps {
-    initialContext: string;
+interface PrescriptionData {
+    filename: string;
+    analysis: string;
+    uploadDate: Date;
+    fileType: string;
 }
 
-export default function ChatInterface({ initialContext }: ChatInterfaceProps) {
+interface ChatInterfaceProps {
+    initialContext: string;
+    prescriptionData?: PrescriptionData;
+}
+
+export default function ChatInterface({ initialContext, prescriptionData }: ChatInterfaceProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -58,26 +66,46 @@ export default function ChatInterface({ initialContext }: ChatInterfaceProps) {
         };
 
         setMessages(prev => [...prev, userMessage]);
+        const currentInput = inputText;
         setInputText('');
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/chat', {
+            // Prepare request payload with proper structure
+            const requestPayload = {
+                message: currentInput,
+                threadId: typeof window !== 'undefined' ? sessionStorage.getItem('chatThreadId') || undefined : undefined,
+                prescriptionContext: prescriptionData ? {
+                    filename: prescriptionData.filename,
+                    analysis: prescriptionData.analysis,
+                    uploadDate: prescriptionData.uploadDate.toISOString(),
+                    fileType: prescriptionData.fileType
+                } : undefined,
+                conversationHistory: messages.map(msg => ({
+                    id: msg.id,
+                    text: msg.text,
+                    isUser: msg.isUser,
+                    timestamp: msg.timestamp.toISOString()
+                }))
+            };
+
+            const response = await fetch('/api/ai/v2', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    message: inputText,
-                    context: initialContext,
-                    history: messages
-                })
+                body: JSON.stringify(requestPayload)
             });
 
             const data = await response.json();
 
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to get response');
+            }
+
+            // Store thread ID for future requests
+            if (data.threadId && typeof window !== 'undefined') {
+                sessionStorage.setItem('chatThreadId', data.threadId);
             }
 
             const aiMessage: Message = {
@@ -116,8 +144,14 @@ export default function ChatInterface({ initialContext }: ChatInterfaceProps) {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 && (
                     <div className="text-center text-gray-500 py-8">
-                        <p>Ask me anything about your medical analysis!</p>
-                        <p className="text-sm mt-2">Try: &quot;What does this mean?&quot; or &quot;Should I be concerned?&quot;</p>
+                        <p className="text-lg font-medium mb-2">Hi! I'm here to help you understand your prescription.</p>
+                        <p className="mb-4">Ask me anything about your medical analysis!</p>
+                        <div className="text-sm space-y-1">
+                            <p>💊 "What does this medication do?"</p>
+                            <p>⚠️ "Are there any side effects I should know about?"</p>
+                            <p>📋 "How should I take this medication?"</p>
+                            <p>🤔 "Can you explain this part of the analysis?"</p>
+                        </div>
                     </div>
                 )}
 
@@ -168,7 +202,7 @@ export default function ChatInterface({ initialContext }: ChatInterfaceProps) {
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Ask a question about your analysis..."
+                        placeholder="Ask me about your prescription..."
                         className="flex-1 resize-none border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         rows={2}
                         disabled={isLoading}
