@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Space_Grotesk, DM_Sans } from "next/font/google"
 import "./globals.css"
 import { ClerkProvider } from "@clerk/nextjs"
+import { Analytics } from "@vercel/analytics/next"
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -78,6 +79,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
     <html lang="en" className={`${spaceGrotesk.variable} ${dmSans.variable} antialiased`}>
+      <Analytics />
       <body>
         {children}
       </body>
