@@ -40,7 +40,7 @@ console.log(MEDICAL_SYSTEM_PROMPT);
 
 
 // Simplified approach without LangGraph memory to avoid message ordering issues
-const generateResponse = async (messages: any[]) => {
+const generateResponse = async (messages: (HumanMessage | SystemMessage | AIMessage)[]) => {
   try {
     const response = await llm.invoke(messages);
     return response;
@@ -129,7 +129,7 @@ ${body.prescriptionContext.analysis}`;
           if (typeof item === 'string') {
             return item;
           } else if (item && typeof item === 'object' && 'text' in item) {
-            return (item as any).text || '';
+            return (item as { text: string }).text || '';
           }
           return '';
         })

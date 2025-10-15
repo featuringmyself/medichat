@@ -16,8 +16,10 @@ import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { SignedIn, SignedOut, SignUpButton } from "@clerk/nextjs";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface FileUploadProps {
-  // onFileSelect prop removed as it's not used
+  // Empty interface - component doesn't require any props
+  // This is intentional as the component is self-contained
 }
 
 export function FileUpload({}: FileUploadProps) {

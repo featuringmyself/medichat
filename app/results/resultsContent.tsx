@@ -6,6 +6,69 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, MessageCircle } from 'lucide-react';
 import ChatInterface from '@/components/ChatInterface';
 
+// Enhanced prescription text formatting function
+const formatPrescriptionText = (text: string): string => {
+    // First escape HTML entities to prevent XSS
+    const escapeHtml = (unsafe: string) => {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    };
+    
+    const escaped = escapeHtml(text);
+    
+    return escaped
+        // Headers
+        .replace(/### (.*?)\n/g, '<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-3 border-b border-gray-200 pb-2">$1</h3>')
+        .replace(/## (.*?)\n/g, '<h2 class="text-xl font-bold text-gray-900 mt-8 mb-4">$1</h2>')
+        .replace(/# (.*?)\n/g, '<h1 class="text-2xl font-bold text-gray-900 mt-8 mb-4">$1</h1>')
+        
+        // Bold and italic text
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
+        
+        // Handle nested bullet points with proper indentation
+        .replace(/^(\s*)\*\s+(.+)$/gm, (match, spaces, content) => {
+            const indentLevel = spaces.length / 2; // Assuming 2 spaces per indent level
+            const marginLeft = indentLevel * 16; // 16px per indent level
+            return `<div class="flex items-start mb-2" style="margin-left: ${marginLeft}px">
+                <span class="text-gray-600 mr-3 mt-1.5 text-xs">•</span>
+                <div class="flex-1">${content}</div>
+            </div>`;
+        })
+        
+        // Handle numbered lists
+        .replace(/^(\s*)(\d+\.)\s+(.+)$/gm, (match, spaces, number, content) => {
+            const indentLevel = spaces.length / 2;
+            const marginLeft = indentLevel * 16;
+            return `<div class="flex items-start mb-3" style="margin-left: ${marginLeft}px">
+                <span class="font-semibold text-gray-700 mr-3 mt-0.5">${number}</span>
+                <div class="flex-1">${content}</div>
+            </div>`;
+        })
+        
+        // Handle horizontal rules
+        .replace(/^---$/gm, '<hr class="my-6 border-gray-300">')
+        
+        // Handle paragraphs - split by double newlines
+        .split(/\n\n+/)
+        .map(paragraph => {
+            // Skip if it's already formatted as HTML elements
+            if (paragraph.includes('<h') || paragraph.includes('<div') || paragraph.includes('<hr')) {
+                return paragraph;
+            }
+            // Wrap regular paragraphs
+            return `<p class="mb-4">${paragraph.trim()}</p>`;
+        })
+        .join('')
+        
+        // Handle single line breaks within paragraphs
+        .replace(/\n/g, '<br class="mb-1">');
+};
+
 // Types for better type safety
 interface PrescriptionData {
     filename: string;
@@ -14,15 +77,7 @@ interface PrescriptionData {
     fileType: string;
 }
 
-interface ChatContext {
-    prescriptionData: PrescriptionData;
-    conversationHistory: Array<{
-        id: string;
-        text: string;
-        isUser: boolean;
-        timestamp: Date;
-    }>;
-}
+// Removed unused ChatContext interface
 
 export default function ResultsContent() {
     const searchParams = useSearchParams();
@@ -223,7 +278,7 @@ export default function ResultsContent() {
             console.error('Error parsing prescription data:', error);
             return null;
         }
-    }, [analysis, filename]);
+    }, []);
 
     const handleBackToUpload = () => {
         // Clear prescription data when navigating back
@@ -401,24 +456,7 @@ export default function ResultsContent() {
                             <div 
                                 className="text-gray-800 leading-relaxed space-y-4"
                                 dangerouslySetInnerHTML={{ 
-                                    __html: analysis
-                                        // Headers
-                                        .replace(/### (.*?)\n/g, '<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-3 border-b border-gray-200 pb-2">$1</h3>')
-                                        .replace(/## (.*?)\n/g, '<h2 class="text-xl font-bold text-gray-900 mt-8 mb-4">$1</h2>')
-                                        // Bold text
-                                        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
-                                        // Italic text
-                                        .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
-                                        // Numbered lists
-                                        .replace(/(\d+\.)\s+([^\n]+)/g, '<div class="flex items-start mb-3"><span class="font-semibold text-gray-700 mr-3 mt-0.5">$1</span><div class="flex-1">$2</div></div>')
-                                        // Bullet points
-                                        .replace(/^\s*[*•-]\s+(.+)$/gm, '<div class="flex items-start mb-2 ml-4"><span class="text-gray-600 mr-3 mt-1.5 text-xs">•</span><div class="flex-1">$1</div></div>')
-                                        // Paragraphs
-                                        .replace(/\n\n/g, '</p><p class="mb-4">')
-                                        .replace(/^/, '<p class="mb-4">')
-                                        .replace(/$/, '</p>')
-                                        // Line breaks
-                                        .replace(/\n/g, '<br class="mb-1">')
+                                    __html: formatPrescriptionText(analysis)
                                 }}
                             />
                         </div>
@@ -444,7 +482,7 @@ export default function ResultsContent() {
                         <div className="text-center py-4">
                             <p className="text-gray-600 mb-2">Ask me anything about your prescription analysis!</p>
                             <p className="text-sm text-gray-500">
-                                Try: "What does this medication do?" or "Are there any side effects I should know about?"
+                                Try: &quot;What does this medication do?&quot; or &quot;Are there any side effects I should know about?&quot;
                             </p>
                         </div>
                     )}

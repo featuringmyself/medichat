@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
-// Simple markdown parser for basic formatting with XSS protection
+// Enhanced markdown parser for prescription formatting with XSS protection
 const parseMarkdown = (text: string) => {
     // First escape HTML entities to prevent XSS
     const escapeHtml = (unsafe: string) => {
@@ -16,10 +16,54 @@ const parseMarkdown = (text: string) => {
     };
     
     const escaped = escapeHtml(text);
+    
     return escaped
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-        .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
-        .replace(/\n/g, '<br>'); // Line breaks
+        // Headers
+        .replace(/### (.*?)\n/g, '<h3 class="text-lg font-semibold text-gray-900 mt-4 mb-2 border-b border-gray-200 pb-1">$1</h3>')
+        .replace(/## (.*?)\n/g, '<h2 class="text-xl font-bold text-gray-900 mt-4 mb-2">$1</h2>')
+        .replace(/# (.*?)\n/g, '<h1 class="text-2xl font-bold text-gray-900 mt-4 mb-2">$1</h1>')
+        
+        // Bold and italic text
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
+        
+        // Handle nested bullet points with proper indentation
+        .replace(/^(\s*)\*\s+(.+)$/gm, (match, spaces, content) => {
+            const indentLevel = spaces.length / 2; // Assuming 2 spaces per indent level
+            const marginLeft = indentLevel * 12; // 12px per indent level for chat
+            return `<div class="flex items-start mb-1" style="margin-left: ${marginLeft}px">
+                <span class="text-gray-600 mr-2 mt-1 text-xs">•</span>
+                <div class="flex-1 text-sm">${content}</div>
+            </div>`;
+        })
+        
+        // Handle numbered lists
+        .replace(/^(\s*)(\d+\.)\s+(.+)$/gm, (match, spaces, number, content) => {
+            const indentLevel = spaces.length / 2;
+            const marginLeft = indentLevel * 12;
+            return `<div class="flex items-start mb-2" style="margin-left: ${marginLeft}px">
+                <span class="font-semibold text-gray-700 mr-2 mt-0.5 text-sm">${number}</span>
+                <div class="flex-1 text-sm">${content}</div>
+            </div>`;
+        })
+        
+        // Handle horizontal rules
+        .replace(/^---$/gm, '<hr class="my-3 border-gray-300">')
+        
+        // Handle paragraphs - split by double newlines
+        .split(/\n\n+/)
+        .map(paragraph => {
+            // Skip if it's already formatted as HTML elements
+            if (paragraph.includes('<h') || paragraph.includes('<div') || paragraph.includes('<hr')) {
+                return paragraph;
+            }
+            // Wrap regular paragraphs
+            return `<p class="mb-2 text-sm">${paragraph.trim()}</p>`;
+        })
+        .join('')
+        
+        // Handle single line breaks within paragraphs
+        .replace(/\n/g, '<br class="mb-1">');
 };
 
 interface Message {
