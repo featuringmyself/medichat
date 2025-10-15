@@ -65,9 +65,9 @@ export async function POST(request: Request) {
         }
 
         // Log minimal info for debugging (avoid sensitive data)
-        console.log('Processing file:', fileName.replace(/[^a-zA-Z0-9.-]/g, ''), 'Size:', file.size, 'Type:', mimeType);
-        console.log('API Key exists:', !!process.env.GEMINI_API_KEY);
-        console.log('System prompt exists:', !!process.env.SYSTEM_PROMPT);
+        // console.log('Processing file:', fileName.replace(/[^a-zA-Z0-9.-]/g, ''), 'Size:', file.size, 'Type:', mimeType);
+        // console.log('API Key exists:', !!process.env.GEMINI_API_KEY);
+        // console.log('System prompt exists:', !!process.env.SYSTEM_PROMPT);
 
         // Add a small delay to prevent rate limiting
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -102,11 +102,11 @@ export async function POST(request: Request) {
                     });
 
                     // Generate streaming response
-                    console.log('Starting streaming response...');
+                    // console.log('Starting streaming response...');
                     
                     if (!process.env.GEMINI_API_KEY) {
                         // Fallback response when API key is missing
-                        console.log('Using fallback response due to missing API key');
+                        // console.log('Using fallback response due to missing API key');
                         const fallbackResponse = `# Prescription Analysis
 
 ## File Information
@@ -144,10 +144,10 @@ This appears to be a prescription document. To get a detailed analysis, please e
                         }
                     } else {
                         const responseStream = await llm.stream([message]);
-                        console.log('Stream created, starting to read chunks...');
+                        // console.log('Stream created, starting to read chunks...');
                         
                         for await (const chunk of responseStream) {
-                            console.log('Received chunk:', typeof chunk.content, chunk.content ? 'has content' : 'no content');
+                            // console.log('Received chunk:', typeof chunk.content, chunk.content ? 'has content' : 'no content');
                             if (chunk.content) {
                                 // Handle different content types
                                 let chunkText: string;
@@ -173,14 +173,14 @@ This appears to be a prescription document. To get a detailed analysis, please e
                                     content: chunkText,
                                     type: 'chunk'
                                 };
-                                console.log('Sending chunk:', chunkText.substring(0, 50) + '...');
+                                // console.log('Sending chunk:', chunkText.substring(0, 50) + '...');
                                 controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunkData)}\n\n`));
                             }
                         }
                     }
 
                     // Send completion signal
-                    console.log('Streaming complete, sending done signal...');
+                    // console.log('Streaming complete, sending done signal...');
                     const completionData = {
                         type: 'done',
                         filename: file.name,
